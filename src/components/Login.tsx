@@ -14,7 +14,7 @@ export const Login: React.FC<Props> = ({ onLogin, onNotification }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isRegistering) {
@@ -23,7 +23,7 @@ export const Login: React.FC<Props> = ({ onLogin, onNotification }) => {
         return;
       }
 
-      const users = storage.getUsers();
+      const users = await storage.getUsers();
       if (users.some(u => u.username === username)) {
         onNotification('Пользователь с таким именем уже существует', 'error');
         return;
@@ -38,18 +38,18 @@ export const Login: React.FC<Props> = ({ onLogin, onNotification }) => {
       };
 
       users.push(newUser);
-      storage.saveUsers(users);
+      await storage.saveUsers(users);
       onNotification('Регистрация успешна', 'success');
       setIsRegistering(false);
       setUsername('');
       setPassword('');
       setConfirmPassword('');
     } else {
-      const users = storage.getUsers();
+      const users = await storage.getUsers();
       const user = users.find(u => u.username === username && u.password === password);
       
       if (user) {
-        onLogin(user);
+        await onLogin(user);
         onNotification('Добро пожаловать!', 'success');
       } else {
         onNotification('Неверные данные для входа', 'error');

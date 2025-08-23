@@ -1,4 +1,5 @@
 import { User, Build, Raid, PendingBuild } from '../types';
+import { saveDataToFile, loadDataWithFallback } from './dataFiles';
 
 const STORAGE_KEYS = {
   users: 'app_users',
@@ -10,106 +11,93 @@ const STORAGE_KEYS = {
   buildViews: 'app_build_views'
 };
 
+const DATA_FILES = {
+  users: 'users.js',
+  builds: 'builds.js',
+  raids: 'raids.js',
+  pendingBuilds: 'pendingBuilds.js',
+  userLikes: 'userLikes.js',
+  buildViews: 'buildViews.js',
+  currentUser: 'currentUser.js'
+};
+
 // Initialize default admin user
-const initializeData = () => {
-  const existingUsers = localStorage.getItem(STORAGE_KEYS.users);
-  if (!existingUsers) {
+const initializeData = async () => {
+  const existingUsers = await loadDataWithFallback(DATA_FILES.users, STORAGE_KEYS.users, []);
+  if (existingUsers.length === 0) {
     const adminUser: User = {
       id: 'admin-1',
       username: 'admin',
       password: 'admin123',
-      currentPlayers: [],
       isAdmin: true,
       createdAt: new Date().toISOString()
     };
-    localStorage.setItem(STORAGE_KEYS.users, JSON.stringify([adminUser]));
-  }
-
-  // Initialize other storage if doesn't exist
-  if (!localStorage.getItem(STORAGE_KEYS.builds)) {
-    localStorage.setItem(STORAGE_KEYS.builds, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.raids)) {
-    localStorage.setItem(STORAGE_KEYS.raids, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.pendingBuilds)) {
-    localStorage.setItem(STORAGE_KEYS.pendingBuilds, JSON.stringify([]));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.userLikes)) {
-    localStorage.setItem(STORAGE_KEYS.userLikes, JSON.stringify({}));
-  }
-  if (!localStorage.getItem(STORAGE_KEYS.buildViews)) {
-    localStorage.setItem(STORAGE_KEYS.buildViews, JSON.stringify({}));
+    await saveDataToFile(DATA_FILES.users, [adminUser]);
   }
 };
 
 export const storage = {
   // Users
-  getUsers: (): User[] => {
-    initializeData();
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.users) || '[]');
+  getUsers: async (): Promise<User[]> => {
+    await initializeData();
+    return await loadDataWithFallback(DATA_FILES.users, STORAGE_KEYS.users, []);
   },
 
-  saveUsers: (users: User[]) => {
-    localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
+  saveUsers: async (users: User[]) => {
+    await saveDataToFile(DATA_FILES.users, users);
   },
 
   // Builds
-  getBuilds: (): Build[] => {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.builds) || '[]');
+  getBuilds: async (): Promise<Build[]> => {
+    return await loadDataWithFallback(DATA_FILES.builds, STORAGE_KEYS.builds, []);
   },
 
-  saveBuilds: (builds: Build[]) => {
-    localStorage.setItem(STORAGE_KEYS.builds, JSON.stringify(builds));
+  saveBuilds: async (builds: Build[]) => {
+    await saveDataToFile(DATA_FILES.builds, builds);
   },
 
   // Raids
-  getRaids: (): Raid[] => {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.raids) || '[]');
+  getRaids: async (): Promise<Raid[]> => {
+    return await loadDataWithFallback(DATA_FILES.raids, STORAGE_KEYS.raids, []);
   },
 
-  saveRaids: (raids: Raid[]) => {
-    localStorage.setItem(STORAGE_KEYS.raids, JSON.stringify(raids));
+  saveRaids: async (raids: Raid[]) => {
+    await saveDataToFile(DATA_FILES.raids, raids);
   },
 
   // Pending Builds
-  getPendingBuilds: (): PendingBuild[] => {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.pendingBuilds) || '[]');
+  getPendingBuilds: async (): Promise<PendingBuild[]> => {
+    return await loadDataWithFallback(DATA_FILES.pendingBuilds, STORAGE_KEYS.pendingBuilds, []);
   },
 
-  savePendingBuilds: (builds: PendingBuild[]) => {
-    localStorage.setItem(STORAGE_KEYS.pendingBuilds, JSON.stringify(builds));
+  savePendingBuilds: async (builds: PendingBuild[]) => {
+    await saveDataToFile(DATA_FILES.pendingBuilds, builds);
   },
 
   // Current User
-  getCurrentUser: (): User | null => {
-    const userData = localStorage.getItem(STORAGE_KEYS.currentUser);
-    return userData ? JSON.parse(userData) : null;
+  getCurrentUser: async (): Promise<User | null> => {
+    return await loadDataWithFallback(DATA_FILES.currentUser, STORAGE_KEYS.currentUser, null);
   },
 
-  setCurrentUser: (user: User | null) => {
-    if (user) {
-      localStorage.setItem(STORAGE_KEYS.currentUser, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(STORAGE_KEYS.currentUser);
-    }
+  setCurrentUser: async (user: User | null) => {
+    await saveDataToFile(DATA_FILES.currentUser, user);
   },
 
   // User Likes
-  getUserLikes: (): { [userId: string]: string[] } => {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.userLikes) || '{}');
+  getUserLikes: async (): Promise<{ [userId: string]: string[] }> => {
+    return await loadDataWithFallback(DATA_FILES.userLikes, STORAGE_KEYS.userLikes, {});
   },
 
-  saveUserLikes: (likes: { [userId: string]: string[] }) => {
-    localStorage.setItem(STORAGE_KEYS.userLikes, JSON.stringify(likes));
+  saveUserLikes: async (likes: { [userId: string]: string[] }) => {
+    await saveDataToFile(DATA_FILES.userLikes, likes);
   },
 
   // Build Views
-  getBuildViews: (): { [buildId: string]: number } => {
-    return JSON.parse(localStorage.getItem(STORAGE_KEYS.buildViews) || '{}');
+  getBuildViews: async (): Promise<{ [buildId: string]: number }> => {
+    return await loadDataWithFallback(DATA_FILES.buildViews, STORAGE_KEYS.buildViews, {});
   },
 
-  saveBuildViews: (views: { [buildId: string]: number }) => {
-    localStorage.setItem(STORAGE_KEYS.buildViews, JSON.stringify(views));
+  saveBuildViews: async (views: { [buildId: string]: number }) => {
+    await saveDataToFile(DATA_FILES.buildViews, views);
   }
 };

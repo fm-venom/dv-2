@@ -23,20 +23,23 @@ export const Builds: React.FC<Props> = ({ currentUser, onNotification }) => {
   });
 
   useEffect(() => {
-    loadData();
+    const loadDataAsync = async () => {
+      await loadData();
+    };
+    loadDataAsync();
   }, []);
 
-  const loadData = () => {
-    const buildsData = storage.getBuilds().filter(b => b.approved);
-    const usersData = storage.getUsers();
-    const likesData = storage.getUserLikes();
+  const loadData = async () => {
+    const buildsData = (await storage.getBuilds()).filter(b => b.approved);
+    const usersData = await storage.getUsers();
+    const likesData = await storage.getUserLikes();
     
     setBuilds(buildsData);
     setUsers(usersData);
     setUserLikes(likesData);
   };
 
-  const handleLike = (buildId: string) => {
+  const handleLike = async (buildId: string) => {
     const currentLikes = userLikes[currentUser.id] || [];
     const hasLiked = currentLikes.includes(buildId);
     
@@ -59,12 +62,12 @@ export const Builds: React.FC<Props> = ({ currentUser, onNotification }) => {
     
     setUserLikes(newUserLikes);
     setBuilds(updatedBuilds);
-    storage.saveUserLikes(newUserLikes);
-    storage.saveBuilds(updatedBuilds);
+    await storage.saveUserLikes(newUserLikes);
+    await storage.saveBuilds(updatedBuilds);
   };
 
-  const handleView = (buildId: string) => {
-    const buildViews = storage.getBuildViews();
+  const handleView = async (buildId: string) => {
+    const buildViews = await storage.getBuildViews();
     const newViews = { ...buildViews, [buildId]: (buildViews[buildId] || 0) + 1 };
     
     const updatedBuilds = builds.map(build => 
@@ -72,11 +75,11 @@ export const Builds: React.FC<Props> = ({ currentUser, onNotification }) => {
     );
     
     setBuilds(updatedBuilds);
-    storage.saveBuildViews(newViews);
-    storage.saveBuilds(updatedBuilds);
+    await storage.saveBuildViews(newViews);
+    await storage.saveBuilds(updatedBuilds);
   };
 
-  const handleSubmitBuild = () => {
+  const handleSubmitBuild = async () => {
     if (!newBuild.title.trim() || !newBuild.description.trim() || !newBuild.image.trim()) {
       onNotification('Заполните все поля', 'error');
       return;
@@ -91,9 +94,9 @@ export const Builds: React.FC<Props> = ({ currentUser, onNotification }) => {
       createdAt: new Date().toISOString()
     };
 
-    const pendingBuilds = storage.getPendingBuilds();
+    const pendingBuilds = await storage.getPendingBuilds();
     pendingBuilds.push(pendingBuild);
-    storage.savePendingBuilds(pendingBuilds);
+    await storage.savePendingBuilds(pendingBuilds);
 
     setIsAddModalOpen(false);
     setNewBuild({ title: '', description: '', image: '' });
