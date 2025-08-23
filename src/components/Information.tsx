@@ -12,11 +12,11 @@ export const Information: React.FC = () => {
   });
 
   useEffect(() => {
-    const loadStats = async () => {
-      const users = await storage.getUsers();
-      const builds = (await storage.getBuilds()).filter(b => b.approved);
-      const raids = await storage.getRaids();
-      const buildViews = await storage.getBuildViews();
+    const loadStats = () => {
+      const users = storage.getUsers();
+      const builds = storage.getBuilds().filter(b => b.approved);
+      const raids = storage.getRaids();
+      const buildViews = storage.getBuildViews();
       
       const totalLikes = builds.reduce((sum, build) => sum + build.likes, 0);
       const totalViews = Object.values(buildViews).reduce((sum: number, views: number) => sum + views, 0);

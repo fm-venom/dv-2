@@ -27,20 +27,17 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
   const [raids, setRaids] = useState<Raid[]>([]);
 
   useEffect(() => {
-    const loadDataAsync = async () => {
-      await loadData();
-    };
-    loadDataAsync();
+    loadData();
   }, []);
 
-  const loadData = async () => {
-    setUsers(await storage.getUsers());
-    setPendingBuilds(await storage.getPendingBuilds());
-    setBuilds(await storage.getBuilds());
-    setRaids(await storage.getRaids());
+  const loadData = () => {
+    setUsers(storage.getUsers());
+    setPendingBuilds(storage.getPendingBuilds());
+    setBuilds(storage.getBuilds());
+    setRaids(storage.getRaids());
   };
 
-  const handleDeleteUser = async (userId: string) => {
+  const handleDeleteUser = (userId: string) => {
     if (userId === currentUser.id) {
       onNotification('Нельзя удалить себя', 'error');
       return;
@@ -48,7 +45,7 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
 
     const updatedUsers = users.filter(user => user.id !== userId);
     setUsers(updatedUsers);
-    await storage.saveUsers(updatedUsers);
+    storage.saveUsers(updatedUsers);
     onNotification('Пользователь удален', 'success');
   };
 
@@ -57,7 +54,7 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
     setIsEditModalOpen(true);
   };
 
-  const handleSaveUser = async () => {
+  const handleSaveUser = () => {
     if (!editingUser) return;
 
     const updatedUsers = users.map(user => 
@@ -65,23 +62,23 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
     );
     
     setUsers(updatedUsers);
-    await storage.saveUsers(updatedUsers);
+    storage.saveUsers(updatedUsers);
     setIsEditModalOpen(false);
     setEditingUser(null);
     onNotification('Пользователь обновлен', 'success');
   };
 
-  const handleMakeAdmin = async (userId: string) => {
+  const handleMakeAdmin = (userId: string) => {
     const updatedUsers = users.map(user => 
       user.id === userId ? {...user, isAdmin: true} : user
     );
     
     setUsers(updatedUsers);
-    await storage.saveUsers(updatedUsers);
+    storage.saveUsers(updatedUsers);
     onNotification('Пользователь назначен администратором', 'success');
   };
 
-  const handleAddAdmin = async () => {
+  const handleAddAdmin = () => {
     const user = users.find(u => u.username === newAdminUsername);
     if (!user) {
       onNotification('Пользователь не найден', 'error');
@@ -93,12 +90,12 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
       return;
     }
 
-    await handleMakeAdmin(user.id);
+    handleMakeAdmin(user.id);
     setIsAddAdminModalOpen(false);
     setNewAdminUsername('');
   };
 
-  const handleApproveBuild = async (buildId: string) => {
+  const handleApproveBuild = (buildId: string) => {
     const build = pendingBuilds.find(b => b.id === buildId);
     if (!build) return;
 
@@ -114,22 +111,22 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
 
     setBuilds(updatedBuilds);
     setPendingBuilds(updatedPending);
-    await storage.saveBuilds(updatedBuilds);
-    await storage.savePendingBuilds(updatedPending);
+    storage.saveBuilds(updatedBuilds);
+    storage.savePendingBuilds(updatedPending);
     onNotification('Билд одобрен', 'success');
   };
 
-  const handleRejectBuild = async (buildId: string) => {
+  const handleRejectBuild = (buildId: string) => {
     const updatedPending = pendingBuilds.filter(b => b.id !== buildId);
     setPendingBuilds(updatedPending);
-    await storage.savePendingBuilds(updatedPending);
+    storage.savePendingBuilds(updatedPending);
     onNotification('Билд отклонен', 'info');
   };
 
-  const handleDeleteBuild = async (buildId: string) => {
+  const handleDeleteBuild = (buildId: string) => {
     const updatedBuilds = builds.filter(b => b.id !== buildId);
     setBuilds(updatedBuilds);
-    await storage.saveBuilds(updatedBuilds);
+    storage.saveBuilds(updatedBuilds);
     onNotification('Билд удален', 'success');
   };
 
@@ -138,7 +135,7 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
     setIsEditBuildModalOpen(true);
   };
 
-  const handleSaveBuild = async () => {
+  const handleSaveBuild = () => {
     if (!editingBuild) return;
 
     const updatedBuilds = builds.map(build => 
@@ -146,16 +143,16 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
     );
     
     setBuilds(updatedBuilds);
-    await storage.saveBuilds(updatedBuilds);
+    storage.saveBuilds(updatedBuilds);
     setIsEditBuildModalOpen(false);
     setEditingBuild(null);
     onNotification('Билд обновлен', 'success');
   };
 
-  const handleDeleteRaid = async (raidId: string) => {
+  const handleDeleteRaid = (raidId: string) => {
     const updatedRaids = raids.filter(r => r.id !== raidId);
     setRaids(updatedRaids);
-    await storage.saveRaids(updatedRaids);
+    storage.saveRaids(updatedRaids);
     onNotification('Рейд удален', 'success');
   };
 
@@ -164,7 +161,7 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
     setIsEditRaidModalOpen(true);
   };
 
-  const handleSaveRaid = async () => {
+  const handleSaveRaid = () => {
     if (!editingRaid) return;
 
     const updatedRaids = raids.map(raid => 
@@ -172,7 +169,7 @@ export const AdminPanel: React.FC<Props> = ({ currentUser, onNotification }) => 
     );
     
     setRaids(updatedRaids);
-    await storage.saveRaids(updatedRaids);
+    storage.saveRaids(updatedRaids);
     setIsEditRaidModalOpen(false);
     setEditingRaid(null);
     onNotification('Рейд обновлен', 'success');

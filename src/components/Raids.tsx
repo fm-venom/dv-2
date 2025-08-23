@@ -24,20 +24,17 @@ export const Raids: React.FC<Props> = ({ currentUser, onNotification }) => {
   const [selectedRole, setSelectedRole] = useState<'dd' | 'medic' | 'tank' | 'flex'>('dd');
 
   useEffect(() => {
-    const loadDataAsync = async () => {
-      await loadData();
-    };
-    loadDataAsync();
+    loadData();
   }, []);
 
-  const loadData = async () => {
-    const raidsData = await storage.getRaids();
-    const usersData = await storage.getUsers();
+  const loadData = () => {
+    const raidsData = storage.getRaids();
+    const usersData = storage.getUsers();
     setRaids(raidsData);
     setUsers(usersData);
   };
 
-  const handleCreateRaid = async () => {
+  const handleCreateRaid = () => {
     if (!newRaid.title.trim() || !newRaid.description.trim() || !newRaid.date || !newRaid.time) {
       onNotification('Заполните все поля', 'error');
       return;
@@ -57,14 +54,14 @@ export const Raids: React.FC<Props> = ({ currentUser, onNotification }) => {
 
     const updatedRaids = [...raids, raid];
     setRaids(updatedRaids);
-    await storage.saveRaids(updatedRaids);
+    storage.saveRaids(updatedRaids);
 
     setIsAddModalOpen(false);
     setNewRaid({ title: '', description: '', date: '', time: '', maxPlayers: 5 });
     onNotification('Рейд создан успешно', 'success');
   };
 
-  const handleJoinRaid = async (raidId: string, role: 'dd' | 'medic' | 'tank' | 'flex') => {
+  const handleJoinRaid = (raidId: string, role: 'dd' | 'medic' | 'tank' | 'flex') => {
     const updatedRaids = raids.map(raid => {
       if (raid.id === raidId && !raid.currentPlayers.some(p => p.userId === currentUser.id)) {
         if (raid.currentPlayers.length < raid.maxPlayers) {
@@ -78,11 +75,11 @@ export const Raids: React.FC<Props> = ({ currentUser, onNotification }) => {
     });
     
     setRaids(updatedRaids);
-    await storage.saveRaids(updatedRaids);
+    storage.saveRaids(updatedRaids);
     onNotification('Вы присоединились к рейду', 'success');
   };
 
-  const handleLeaveRaid = async (raidId: string) => {
+  const handleLeaveRaid = (raidId: string) => {
     const updatedRaids = raids.map(raid => {
       if (raid.id === raidId && raid.currentPlayers.some(p => p.userId === currentUser.id)) {
         return { ...raid, currentPlayers: raid.currentPlayers.filter(p => p.userId !== currentUser.id) };
@@ -91,7 +88,7 @@ export const Raids: React.FC<Props> = ({ currentUser, onNotification }) => {
     });
     
     setRaids(updatedRaids);
-    await storage.saveRaids(updatedRaids);
+    storage.saveRaids(updatedRaids);
     onNotification('Вы покинули рейд', 'info');
   };
 

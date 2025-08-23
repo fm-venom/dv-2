@@ -15,23 +15,20 @@ function App() {
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
 
   useEffect(() => {
-    const loadCurrentUser = async () => {
-      const user = await storage.getCurrentUser();
-      if (user) {
-        setCurrentUser(user);
-      }
-    };
-    loadCurrentUser();
+    const user = storage.getCurrentUser();
+    if (user) {
+      setCurrentUser(user);
+    }
   }, []);
 
-  const handleLogin = async (user: User) => {
+  const handleLogin = (user: User) => {
     setCurrentUser(user);
-    await storage.setCurrentUser(user);
+    storage.setCurrentUser(user);
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setCurrentUser(null);
-    await storage.setCurrentUser(null);
+    storage.setCurrentUser(null);
     setActiveTab('builds');
   };
 
