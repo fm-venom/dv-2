@@ -14,46 +14,29 @@ export const Login: React.FC<Props> = ({ onLogin, onNotification }) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isRegistering) {
-      if (password !== confirmPassword) {
-        onNotification('Пароли не совпадают', 'error');
-        return;
-      }
+    try {
+      if (isRegistering) {
+        if (password !== confirmPassword) {
+          onNotification('Пароли не совпадают', 'error');
+          return;
+        }
 
-      const users = storage.getUsers();
-      if (users.some(u => u.username === username)) {
-        onNotification('Пользователь с таким именем уже существует', 'error');
-        return;
-      }
-
-      const newUser: UserType = {
-        id: Date.now().toString(),
-        username,
-        password,
-        isAdmin: false,
-        createdAt: new Date().toISOString()
-      };
-
-      users.push(newUser);
-      storage.saveUsers(users);
-      onNotification('Регистрация успешна', 'success');
-      setIsRegistering(false);
-      setUsername('');
-      setPassword('');
-      setConfirmPassword('');
-    } else {
-      const users = storage.getUsers();
-      const user = users.find(u => u.username === username && u.password === password);
-      
-      if (user) {
+        const newUser = await storage.signUp(username, password);
+        onNotification('Регистрация успешна', 'success');
+        setIsRegistering(false);
+        setUsername('');
+        setPassword('');
+        setConfirmPassword('');
+      } else {
+        const user = await storage.signIn(username, password);
         onLogin(user);
         onNotification('Добро пожаловать!', 'success');
-      } else {
-        onNotification('Неверные данные для входа', 'error');
       }
+    } catch (error) {
+      onNotification(error instanceof Error ? error.message : 'Произошла ошибка', 'error');
     }
   };
 
